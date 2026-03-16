@@ -1,0 +1,57 @@
+---
+- name: Provision servers
+  become: yes
+  hosts: all
+  tasks:
+  - name: "Create {{ new_group }} group"
+    ansible.builtin.group:
+      name: "{{ new_group }}"
+      state: present
+  - name: "Create {{ new_group }} user"
+    ansible.builtin.user:
+      name: "{{ new_user }}"
+      group: "{{ new_group }}"
+      shell: /bin/bash
+      create_home: yes
+      home: "/home/{{ new_user }}"
+  # reference: https://stackoverflow.com/posts/33362805/revisions
+  - name: "Allow '{{ new_group }}' group to have passwordless sudo"
+    lineinfile:
+      path: /etc/sudoers
+      state: present
+      regexp: '^%{{new_group}}'
+      line: '%{{new_group}} ALL=(ALL) NOPASSWD: ALL'
+      validate: visudo -cf %s
+  - name: Add ssh keys
+    authorized_key:
+      user: "{{ new_user }}"
+      state: "{{ item.state }}"
+      key: "{{ item.key }}"
+    loop: "{{ ssh_pub_keys }}"
+  - name: Get auth keys
+    command: "cat /home/{{ new_user }}/.ssh/authorized_keys"
+    register: auth
+  - debug: msg="{{ auth.stdout_lines }}"
+  # - name: Comment PermitRootLogin
+  #   become_user: root
+  #   lineinfile:
+  #     path: /etc/ssh/sshd_config
+  #     state: present
+  #     regexp: '.*PermitRootLogin.*'
+  #     line: 'PermitRootLogin no'
+  # - name: Disable password authentication
+  #   become_user: root
+  #   lineinfile:
+  #     path: /etc/ssh/sshd_config
+  #     state: present
+  #     regexp: '.*PasswordAuthentication.*'
+  #     line: 'PasswordAuthentication no'
+  - name: Restart sshd service
+    ansible.builtin.service:
+      name: "{{ item }}"
+      state: restarted
+    loop:
+      - sshd
+      - ssh
+    ignore_errors: true
+  

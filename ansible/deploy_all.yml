@@ -1,0 +1,24 @@
+---
+- name: Deploy socmed with uv
+  hosts: all
+  tasks:
+  - name: Ensure socmed dir exists
+    ansible.builtin.file:
+      name: "/home/{{ new_user }}/socmed"
+      state: directory
+  - name: Copy all files
+    ansible.builtin.copy:
+      src: "{{ playbook_dir }}/../{{ item }}"
+      dest: "/home/{{ new_user }}/socmed/"
+    loop:
+    - extract_data.py
+    - plotter.py
+    - geckodriver
+    - data
+    - toquery_updated_v2.json
+
+  - name: Run extract_data.py hourly, cronjob
+    ansible.builtin.cron:
+      name: extract socmed stats
+      minute: "0"      
+      job: '/bin/bash -c "/home/{{ new_user }}/.local/bin/uv run /home/{{ new_user }}/socmed/extract_data.py &>> logs.txt"'

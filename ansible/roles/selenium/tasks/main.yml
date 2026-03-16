@@ -1,0 +1,8 @@
+---
+- name: Ensure firefox, etc is installed
+  ansible.builtin.apt:
+    name:
+      - firefox
+      - build-essential
+      - python3-dev
+    state: latest

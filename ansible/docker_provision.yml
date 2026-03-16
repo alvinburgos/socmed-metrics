@@ -1,0 +1,9 @@
+- hosts: all
+  become: yes
+  vars:
+    docker_users:
+    - "{{ new_user }}"
+
+  roles:
+    # - geerlingguy.docker
+    - selenium

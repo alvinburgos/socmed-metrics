@@ -1,0 +1,13 @@
+---
+- name: test playbook
+  hosts: all
+  tasks:
+  - name: List all
+    command: ls -la
+    register: list_all
+  - name: da who?
+    command: who
+    register: who_all
+  - debug: msg="{{ list_all.stdout_lines }}"
+  - debug: msg="{{ who_all.stdout_lines }}"
+
