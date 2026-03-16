@@ -16,3 +16,15 @@ geckodriver
 # samples folder
 samples/
 
+# data folder, should be added on server instead on repo
+data/
+
+# toquery json
+toquery*.json
+toquery*.json.bak
+
+# driver logs
+geckodriver.log
+
+# scrap folder
+scrap/
